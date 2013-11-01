@@ -5,5 +5,5 @@ overhead = [21, 16, 19, 26, 26, 7, 1, 8, 17, 14, 15, 25, 20, 3, 24, 5, 28, 9, 2,
 budget = 2912
 
 solver = Solver.new(generation, overhead, budget)
-
+solver.transform
 puts solver.solve

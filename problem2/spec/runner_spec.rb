@@ -1,5 +1,5 @@
 require_relative '../solver'
-require 'debugger'
+
 RSpec.configure do |config|
   config.mock_framework = :mocha
 end
@@ -14,31 +14,37 @@ describe Solver do
 
   let(:solver) {Solver.new(@generation, @overhead, @budget)}
 
-  it "calculate_time" do
-    solver.calculate_time(2, 9, 21).should eq(51)
-  end
-
-  it "sum_generations" do
-    solver.sum_generations(0).should eq(9)
-    solver.sum_generations(1).should eq(56)
-    solver.sum_generations(2).should eq(152)
-  end
-
-  it "solve" do  
-    solver.stubs(:generation => [9,10], :overhead => [21,16])
-    solver.stubs(:sum_generations).returns(30,93)
-    solver.find_solutions.should eq({1 => 30, 2 => 93})
-  end
-
-  it "solve should not add solutions whose total time exceeds budget" do
-    solver.stubs(:generation => [9,10], :overhead => [21,16])
-    solver.stubs(:sum_generations).returns(30,3000)
-    solver.find_solutions.should eq({1 => 30})
-  end
-  
   it "should return the largest solution" do
     solutions = {1 => 30, 2 => 93}
-    solver.get_answer(solutions).should eq({2 => 93}) 
+    solver.highest_number_of_cards_in_solutions(solutions).should eq(2) 
+  end
+
+  it "transform" do
+    g = [9, 10]
+    o = [21, 16]
+    card1 = Card.new(9,21)
+    card2 = Card.new(10,16)
+    solver.stubs(:generation => [9,10], :overhead => [21,16])
+    solver.stubs(:create_card).returns(card1, card2)
+    solver.transform.should eq([card1, card2])
+  end
+
+  it "calculate_card_budgets" do
+    solver.stubs(:generation => [9,10,3,24], :overhead => [21,16,42,1])
+    solver.transform
+    solver.calculate_card_budgets(4).should eq([27, 58, 72, 129])
+  end
+
+  it "sum_smallest_budgets_at_step" do
+    solver.stubs(:generation => [9,10,3,24], :overhead => [21,16,42,1])
+    solver.transform
+    solver.sum_smallest_budgets_at_step([25, 26, 30, 45], 2).should eq(51)
+  end
+
+  it "find_solutions" do
+    solver.stubs(:generation => [9,10,3,24], :overhead => [21,16,42,1])
+    solver.transform
+    solver.find_solutions.should eq({1=>3, 2=>51, 3=>119, 4=>286})
   end
 
 end
